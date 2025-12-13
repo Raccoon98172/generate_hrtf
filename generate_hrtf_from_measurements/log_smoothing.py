@@ -5,7 +5,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 
 def smooth_frequency_response_log(mags_db, freqs, window_octaves=2):
     """
-    Smooths the frequency response (SPL) using a logarithmic window (Trend).
+    Smooths the frequency response (SPL) using a logarithmic window (Savitzky-Golay).
 
     Args:
         mags_db (array): Array of SPL values (dB).
@@ -53,7 +53,7 @@ def smooth_frequency_response_log(mags_db, freqs, window_octaves=2):
 
     final_result = np.zeros_like(mags_db)
 
-    final_result = result
+    final_result[:] = result[:]
 
     if len(freqs[freqs < F_MIN]) > 0:
         first_val = mags_smoothed_log[0]
@@ -67,6 +67,21 @@ def smooth_frequency_response_log(mags_db, freqs, window_octaves=2):
 
 
 def apply_trend_balance(data_map, fs, n_samples):
+    """
+    Identifies symmetrical pairs of measurements (Azimuth 30 and 330 at the same Elevation).
+    It calculates the average difference (trend) between the Left and Right channels across the pair
+    and applies this smoothed difference to the Right channel.
+
+    Args:
+        data_map (dict): Dictionary where keys are (azimuth, elevation) tuples.
+                            Values are dicts with keys "left" and "right", containing:
+                            (freqs, spls, [phase]).
+        fs (int): Sampling rate in Hz.
+        n_samples (int): FFT size used to generate the common frequency grid.
+
+    Returns:
+        dict: The modified data_map with corrected "right" channel SPLs.
+    """
 
     n_fft = n_samples
 
@@ -104,8 +119,13 @@ def apply_trend_balance(data_map, fs, n_samples):
 
             for data in data_points:
                 if "left" in data and "right" in data:
-                    freq_l, spl_l = data["left"]
-                    freq_r, spl_r = data["right"]
+                    val_l = data["left"]
+                    val_r = data["right"]
+
+                    freq_l = val_l[0]
+                    spl_l = val_l[1]
+                    freq_r = val_r[0]
+                    spl_r = val_r[1]
 
                     interp_spl_l = np.interp(common_freqs_masked, freq_l, spl_l)
                     interp_spl_r = np.interp(common_freqs_masked, freq_r, spl_r)
@@ -129,9 +149,11 @@ def apply_trend_balance(data_map, fs, n_samples):
 
             for az_to_correct in [az1, az2]:
                 if (az_to_correct, el) in data_map:
-                    original_freqs_r, original_spls_r = data_map[(az_to_correct, el)][
-                        "right"
-                    ]
+                    orig_data_r = data_map[(az_to_correct, el)]["right"]
+
+                    original_freqs_r = orig_data_r[0]
+                    original_spls_r = orig_data_r[1]
+                    original_phase_r = orig_data_r[2] if len(orig_data_r) > 2 else None
 
                     correction_on_file_freqs = np.interp(
                         original_freqs_r, common_freqs_masked, correction_curve_db
@@ -139,10 +161,18 @@ def apply_trend_balance(data_map, fs, n_samples):
 
                     corrected_spls_r = original_spls_r + correction_on_file_freqs
 
-                    data_map[(az_to_correct, el)]["right"] = (
-                        original_freqs_r,
-                        corrected_spls_r,
-                    )
+                    if original_phase_r is not None:
+                        data_map[(az_to_correct, el)]["right"] = (
+                            original_freqs_r,
+                            corrected_spls_r,
+                            original_phase_r,
+                        )
+                    else:
+                        data_map[(az_to_correct, el)]["right"] = (
+                            original_freqs_r,
+                            corrected_spls_r,
+                        )
+
                     count_corrected += 1
 
     print(f"'Trend' completed. Processed {count_corrected} files.")

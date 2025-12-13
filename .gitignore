@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+hrtf_processing_plots/
+
+*.txt
+*.sofa
+test.py

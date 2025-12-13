@@ -4,7 +4,6 @@ import numpy as np
 def _smoothstep_weights(x: np.ndarray) -> np.ndarray:
     """
     Creates an S-shaped weight curve from 0 to 1 using a cosine function.
-    Ensures smooth touch (zero derivative) at the edges.
 
     Args:
         x (np.ndarray): Normalized values from 0 to 1.
@@ -26,6 +25,12 @@ def extend_low_frequencies(
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Reconstructs the low-frequency part of the HRTF.
+
+    1. Calculation of a common "anchor" SPL value based on the average of Left/Right
+        measurements at the crossover frequency.
+    2. Assumption of a flat response (constant SPL) for frequencies below the transition zone.
+    3. Smooth crossfading (blending) between the modeled flat low-end and the
+    actual measured high-end data.
 
     Args:
         left_measured_freqs, left_measured_spl: Measurements for the left ear.
