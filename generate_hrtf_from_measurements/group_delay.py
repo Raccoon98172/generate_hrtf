@@ -166,9 +166,13 @@ def compute_excess_group_delay(freqs, spl, phase):
         freq_dense: High resolution frequency array
         gd_excess_smooth: Smoothed excess group delay in MILLISECONDS
     """
-    freq_dense, mag_dense, phase_dense = interpolate_to_dense_grid(freqs, spl, phase)
+    phase_raw_unwrapped = unwrap_phase(phase)
 
-    phase_unwrapped = unwrap_phase(phase_dense)
+    freq_dense, mag_dense, phase_dense = interpolate_to_dense_grid(
+        freqs, spl, phase_raw_unwrapped
+    )
+
+    phase_unwrapped = phase_dense
 
     phase_minimum = calculate_minimum_phase_hilbert(freq_dense, mag_dense)
 
