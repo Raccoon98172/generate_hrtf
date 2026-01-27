@@ -44,7 +44,7 @@ The picture shows how everything should be positioned during the HRTF measuremen
 ## Processing measurement results
 
 1) For the script to work, you need to save all results in the my_hrtf folder in the following format (500 Hz - 20 kHz):
-File name format: {azimuth}_{ear}.txt or {azimuth}_{ear}_{elevation}_elevation.txt
+File name format: `{azimuth}_{ear}.txt` or `{azimuth}_{ear}_{elevation}_elevation.txt`
 2) Export from REW must include PHASE data ( Frequency(Hz), SPL(dB), Phase(deg) ).
 3) Use IR Windows to remove reflections.
 4) To remove the influence of the speaker and microphones, use "A / B", where A is the measurement with the microphone in the ear, and B is the measurement with the microphone in the air.
