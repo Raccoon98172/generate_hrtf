@@ -36,7 +36,7 @@ For calibration, you need to fasten all microphones together and use a sweep (5.
 
 ## HRTF measurement
 
-First, you conduct measurements with microphones in your ears, after which you position the microphone in place of your head and take another measurement, which will allow you to remove the influence of the speaker and the microphones themselves from the HRTF measurements.
+First, you conduct measurements with microphones in your ears `(a)`, after which you position the microphone in place of your head and take another measurement `(b)`, which will allow you to remove the influence of the speaker and the microphones themselves from the HRTF measurements.
 The picture shows how everything should be positioned during the HRTF measurement.
 
 ![alt](wiki-images/hrtf_meas.png)
